@@ -1,10 +1,31 @@
 cmake_minimum_required(VERSION 3.0)
 
+include(ExternalProject)
+
 set(version 0.6)
 configure_file(config.h.cmake_in config.h)
 
-add_subdirectory(libwxservdisc/src)
-add_subdirectory(libvncserver)
+ExternalProject_Add(submodule_wxservdisc
+                    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libwxservdisc/src
+                    DOWNLOAD_COMMAND ""
+                    UPDATE_COMMAND ""
+                   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}
+                   )
+add_library(wxservdisc STATIC IMPORTED)
+set_property(TARGET wxservdisc PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/libwxservdisc.a)
+add_dependencies(wxservdisc submodule_wxservdisc)
+
+
+ExternalProject_Add(submodule_vncclient
+                    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libvncserver
+                    DOWNLOAD_COMMAND ""
+                    UPDATE_COMMAND ""
+                   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR} -DBUILD_SHARED_LIBS=OFF
+                   )
+add_library(vncclient STATIC IMPORTED)
+set_property(TARGET vncclient PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib/libvncclient.a)
+add_dependencies(vncclient submodule_vncclient)
+
 
 add_subdirectory(src)
 
